@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, View } from 'react-native';
 
 // Components
 import Settings from './components/ui/Settings';
 import Ring from './components/ui/Ring'
-import Counter from './components/ui/Counter';
+import ModalView from './components/ui/Modal';
 import Button from './components/ui/Button';
+import Background from './components/ui/Background';
 
 // Typography
 import Header from './components/typography/Header/Header';
@@ -16,8 +16,9 @@ import theme from './theme'
 
 export default function App() {
 
+  const [modalVisible, setModalVisible] = useState(false);
   const [settings, setSettings] = useState({
-    sets: 5,
+    sets: 3,
     duration: 30,
     rest: 60
   })
@@ -26,14 +27,20 @@ export default function App() {
   const [rest, setRest] = useState(settings.rest)
   const [timer, setTimer] = useState(null)
   const [restTimer, setRestTimer] = useState(null)
+  const [isWorkingOut, setIsWorkingOut] = useState(false)
   const [isResting, setIsResting] = useState(null)
 
   // Methods 
+  const showSettingsModal = () => {
+    setModalVisible(true)
+  }
+
   const handleSettingsChange = (id: string, value: number) => {
     setSettings({ ...settings, [id]: value })
   }
 
   const startTimer = () => {
+    setIsWorkingOut(true)
     setCount(settings.duration)
     setIsResting(false)
     setTimer(setInterval(() => {
@@ -52,18 +59,22 @@ export default function App() {
 
   // Reactive
   useEffect(() => {
+    setCount(settings.duration)
+    setRemainingSets(settings.sets)
+  }, [settings])
+
+  useEffect(() => {
     if (count === 0 && remainingSets === 1) {
+      setIsWorkingOut(false)
       clearInterval(timer)
       clearInterval(restTimer)
       setIsResting(null)
-      console.log('Workout is done!')
       setCount(settings.duration)
       setRest(settings.rest)
       setRemainingSets(settings.sets)
     }
 
     if (count === -1) {
-      console.log('Set is done')
       clearInterval(timer)
       startResting()
     }
@@ -72,28 +83,26 @@ export default function App() {
 
   useEffect(() => {
     if (rest === -1) {
-      console.log('Rest is done, get back to work!')
       clearInterval(restTimer)
       startTimer()
     }
   }, [rest])
 
   return (
-    <View style={styles.container}>
-      {isResting && <Header>Take a short break...</Header>}
-      <Ring count={isResting ? rest : count} color={!isResting ? theme.success : theme.warning} />
-      {/* <Settings settings={settings} setSettings={handleSettingsChange} /> */}
-      <Button onClick={startTimer}>Start timer</Button>
+    <Background>
+      {isWorkingOut && remainingSets > 2 && <Header>Sets left: {remainingSets}</Header>}
+      {isWorkingOut && remainingSets <= 2 && <Header>Only {remainingSets} {remainingSets === 1 ? 'set' : 'sets'} left!</Header>}
+      <Ring count={isResting ? rest : count} isResting={isResting} />
+      {isResting && <Header fadeIn color={theme.warning}>Take a short break...</Header>}
+      {!isWorkingOut && <Button onClick={startTimer}>Start timer</Button>}
+      {!isWorkingOut && <Button variant='secondary' onClick={showSettingsModal}>Change Settings</Button>}
       <StatusBar style="auto" />
-    </View>
+      <ModalView 
+        modalVisible={modalVisible} 
+        setModalVisible={setModalVisible}
+        settings={settings}
+        setSettings={handleSettingsChange} 
+        />
+    </Background>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: theme.background,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});

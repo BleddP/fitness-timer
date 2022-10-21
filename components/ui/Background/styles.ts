@@ -2,12 +2,10 @@ import { StyleSheet } from "react-native";
 
 const styles = StyleSheet.create({
     container: {
-        width: 250
-    },
-    picker: {
-        color: '#FFF',
-        width: '100%',
-    }
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+      },
 })
 
 export default styles
