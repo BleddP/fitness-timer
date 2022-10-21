@@ -1,7 +1,8 @@
 {
   "expo": {
-    "name": "fitness-timer",
-    "slug": "fitness-timer",
+    "name": "fitness-app",
+    "slug": "fitness-app",
+    "owner": "bleddp",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
